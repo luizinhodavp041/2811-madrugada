@@ -1,13 +1,12 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  experimental: {
-    // Remove serverActions e serverComponents pois agora são padrão
-  },
+  output: "standalone",
   images: {
-    domains: ["res.cloudinary.com"], // Se você estiver usando Cloudinary
+    domains: ["res.cloudinary.com"],
   },
   experimental: {
-    serverMinification: false,
+    serverActions: true,
+    serverComponentsExternalPackages: ["puppeteer-core"],
   },
 };
 

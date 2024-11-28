@@ -19,7 +19,6 @@ export async function generateCertificatePDF({
 }) {
   try {
     console.log("Iniciando geração do PDF...");
-
     const html = `
       <!DOCTYPE html>
       <html>
@@ -163,25 +162,17 @@ export async function generateCertificatePDF({
       args: chromium.args,
       defaultViewport: chromium.defaultViewport,
       executablePath: await chromium.executablePath(),
-      headless: true,
+      headless: chromium.headless,
     });
 
-    console.log("Navegador iniciado. Criando nova página...");
     const page = await browser.newPage();
-
-    console.log("Configurando conteúdo da página...");
-    await page.setContent(html, {
-      waitUntil: "networkidle0",
-    });
-
-    console.log("Configurando viewport...");
+    await page.setContent(html);
     await page.setViewport({
       width: 1024,
       height: 768,
       deviceScaleFactor: 2,
     });
 
-    console.log("Gerando PDF...");
     const pdf = await page.pdf({
       format: "A4",
       landscape: true,
@@ -189,13 +180,10 @@ export async function generateCertificatePDF({
       margin: { top: "0", right: "0", bottom: "0", left: "0" },
     });
 
-    console.log("Fechando navegador...");
     await browser.close();
-
-    console.log("PDF gerado com sucesso!");
     return pdf;
   } catch (error) {
-    console.error("Erro detalhado na geração do PDF:", error);
+    console.error("Erro na geração do PDF:", error);
     throw error;
   }
 }
