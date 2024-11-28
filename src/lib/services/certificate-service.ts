@@ -1,5 +1,6 @@
 // src/lib/services/certificate-service.ts
-import puppeteer from "puppeteer";
+import chromium from "@sparticuz/chromium";
+import puppeteer from "puppeteer-core";
 
 export async function generateCertificatePDF({
   studentName,
@@ -156,11 +157,13 @@ export async function generateCertificatePDF({
       </html>
     `;
 
-    console.log("HTML do certificado gerado. Iniciando Puppeteer...");
+    console.log("HTML do certificado gerado. Iniciando Chromium...");
 
-    // Configuração específica para a Vercel
     const browser = await puppeteer.launch({
-      args: ["--no-sandbox", "--disable-setuid-sandbox"],
+      args: chromium.args,
+      defaultViewport: chromium.defaultViewport,
+      executablePath: await chromium.executablePath(),
+      headless: true,
     });
 
     console.log("Navegador iniciado. Criando nova página...");

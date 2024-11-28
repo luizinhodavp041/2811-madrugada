@@ -6,6 +6,9 @@ const nextConfig = {
   images: {
     domains: ["res.cloudinary.com"], // Se você estiver usando Cloudinary
   },
+  experimental: {
+    serverMinification: false,
+  },
 };
 
 module.exports = nextConfig;
