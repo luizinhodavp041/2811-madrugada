@@ -17,6 +17,8 @@ export async function generateCertificatePDF({
   courseHours?: number;
 }) {
   try {
+    console.log("Iniciando geração do PDF...");
+
     const html = `
       <!DOCTYPE html>
       <html>
@@ -113,12 +115,10 @@ export async function generateCertificatePDF({
         <body>
           <div class="certificate">
             <div class="border"></div>
-            
             <div class="header">
               <h1>Certificado de Conclusão</h1>
               <div class="divider"></div>
             </div>
-
             <div class="content">
               <p>Certificamos que</p>
               <p class="student-name">${studentName}</p>
@@ -129,7 +129,6 @@ export async function generateCertificatePDF({
                 obtendo aproveitamento de ${quizScore}%
               </p>
             </div>
-
             <div class="footer">
               <div class="footer-item">
                 <p class="footer-label">Data de conclusão</p>
@@ -137,19 +136,16 @@ export async function generateCertificatePDF({
                   completionDate
                 ).toLocaleDateString("pt-BR")}</p>
               </div>
-
               <div class="footer-item">
                 <div class="signature-line"></div>
                 <p class="footer-label">Nome do Diretor</p>
                 <small>Diretor Acadêmico</small>
               </div>
-
               <div class="footer-item">
                 <p class="footer-label">Código de validação</p>
                 <p class="footer-value">${validationCode}</p>
               </div>
             </div>
-
             <div class="validation">
               Validar em: ${
                 process.env.NEXT_PUBLIC_APP_URL
@@ -160,23 +156,29 @@ export async function generateCertificatePDF({
       </html>
     `;
 
-    // Inicia o Puppeteer
-    const browser = await puppeteer.launch();
+    console.log("HTML do certificado gerado. Iniciando Puppeteer...");
+
+    // Configuração específica para a Vercel
+    const browser = await puppeteer.launch({
+      args: ["--no-sandbox", "--disable-setuid-sandbox"],
+    });
+
+    console.log("Navegador iniciado. Criando nova página...");
     const page = await browser.newPage();
 
-    // Define o conteúdo e as configurações da página
+    console.log("Configurando conteúdo da página...");
     await page.setContent(html, {
       waitUntil: "networkidle0",
     });
 
-    // Configura o tamanho da página
+    console.log("Configurando viewport...");
     await page.setViewport({
       width: 1024,
       height: 768,
       deviceScaleFactor: 2,
     });
 
-    // Gera o PDF
+    console.log("Gerando PDF...");
     const pdf = await page.pdf({
       format: "A4",
       landscape: true,
@@ -184,11 +186,13 @@ export async function generateCertificatePDF({
       margin: { top: "0", right: "0", bottom: "0", left: "0" },
     });
 
+    console.log("Fechando navegador...");
     await browser.close();
 
+    console.log("PDF gerado com sucesso!");
     return pdf;
   } catch (error) {
-    console.error("Erro ao gerar certificado:", error);
-    throw new Error("Falha ao gerar o certificado");
+    console.error("Erro detalhado na geração do PDF:", error);
+    throw error;
   }
 }
