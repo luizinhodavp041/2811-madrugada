@@ -2,6 +2,11 @@ import { NextResponse } from "next/server";
 import connectDB from "@/lib/db/mongodb";
 import User from "@/models/User";
 import { getSession } from "@/lib/auth/auth";
+import { User as UserType } from "@/types";
+
+interface UpdateUserData {
+  status: "active" | "inactive";
+}
 
 export async function PATCH(
   request: Request,
@@ -16,19 +21,19 @@ export async function PATCH(
       return new NextResponse("Não autorizado", { status: 401 });
     }
 
-    const admin = await User.findById(session.id);
+    const admin = (await User.findById(session.id)) as UserType;
     if (!admin || admin.role !== "admin") {
       return new NextResponse("Acesso negado", { status: 403 });
     }
 
-    const data = await request.json();
+    const data = (await request.json()) as UpdateUserData;
 
     // Atualiza o status do usuário
-    const updatedUser = await User.findByIdAndUpdate(
+    const updatedUser = (await User.findByIdAndUpdate(
       params.id,
       { status: data.status },
       { new: true }
-    );
+    ).lean()) as UserType;
 
     if (!updatedUser) {
       return new NextResponse("Usuário não encontrado", { status: 404 });

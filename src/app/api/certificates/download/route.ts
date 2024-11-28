@@ -1,9 +1,12 @@
 // src/app/api/certificates/download/route.ts
 export const dynamic = "force-dynamic";
 
+// src/app/api/certificates/download/route.ts
 import { NextResponse } from "next/server";
 import connectDB from "@/lib/db/mongodb";
 import Certificate from "@/models/Certificate";
+import User from "@/models/User";
+import Course from "@/models/Course";
 import { getSession } from "@/lib/auth/auth";
 import { generateCertificatePDF } from "@/lib/services/certificate-service";
 
@@ -28,13 +31,16 @@ export async function GET(request: Request) {
       });
     }
 
+    console.log("Buscando certificado...");
     const certificate = await Certificate.findById(certificateId)
       .populate({
         path: "user",
+        model: User,
         select: "name",
       })
       .populate({
         path: "course",
+        model: Course,
         select: "title hours",
       });
 
@@ -50,7 +56,6 @@ export async function GET(request: Request) {
     }
 
     console.log("Gerando PDF do certificado...");
-    // Gera o PDF
     const pdf = await generateCertificatePDF({
       studentName: certificate.user.name,
       courseName: certificate.course.title,
@@ -61,16 +66,12 @@ export async function GET(request: Request) {
     });
 
     console.log("PDF gerado com sucesso. Retornando arquivo...");
-    // Retorna o PDF
     return new NextResponse(pdf, {
       headers: {
         "Content-Type": "application/pdf",
         "Content-Disposition": `attachment; filename="certificado-${certificate.course.title
           .toLowerCase()
           .replace(/\s+/g, "-")}.pdf"`,
-        "Cache-Control": "no-store, must-revalidate",
-        Pragma: "no-cache",
-        Expires: "0",
       },
     });
   } catch (error) {

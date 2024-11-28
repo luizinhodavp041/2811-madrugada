@@ -4,6 +4,7 @@ export interface User {
   email: string;
   password: string;
   role: "admin" | "student";
+  status: "active" | "inactive"; // Adicionando status
   createdAt?: Date;
   updatedAt?: Date;
 }
